@@ -5,7 +5,7 @@ Langevin dynamics to a gradient-based score matching algorithm based on [Song
 and Ermon, 2019]. Unlike implicit models such as GANs, this learns a true,
 explicit distribution of the input data.
 
-![Annealed Langevin dynamics demo](https://i.imgur.com/LX5HQE5.png)
+![Annealed Langevin dynamics demo](https://i.imgur.com/LXeKezj.jpg)
 
 Previous work has seen a success on modeling from continuous input manifolds,
 such high-quality image inpainting and conditional sampling from MNIST,

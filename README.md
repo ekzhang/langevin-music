@@ -32,11 +32,12 @@ However, there are many instances where DeepBach is unable to capture long-term
 structure. Some
 [casual listeners](https://www.youtube.com/watch?v=QiBM7-5hA6o&lc=UgimrufXaZHSRHgCoAEC)
 have remarked that the compositions "sound good but go nowhere". This could be
-due to a combination of reasons: vanishing gradients of the LSTM, and naive
-Gibbs sampling procedures being unable to escape 1-optimal local minima.
+due to a combination of vanishing LSTM gradients, and Gibbs sampling getting
+stuck in 1-optimal local minima.
 
 We believe by applying enough tricks, it should be possible to produce a model
-that strongly **avoids these local minima**, while retaining controllability
+that strongly **avoids these local minima**, while **retaining
+controllability**.
 
 ## Approach
 
@@ -53,8 +54,14 @@ It's interesting to analyze other approaches that people have tried in the past:
 - **Transformers:** Transformers have been applied to the task of music
   generation and achieved state-of-the-art results on at least one dataset
   ([Huang et al., 2018]). However, transformers are computationally expensive,
-  so they're not as controllable through masking and iterative MCMC-like
+  so they're not easily controllable through masking and iterative MCMC-like
   algorithms.
+- **Markov random fields**: MRFs have been used for generative models to
+  optimize an energy function, notably for bitmap image generation in
+  [ConvChain]. This lends credence to MCMC for discrete probabilistic modeling.
+  However, as previously mentioned, it doesn't learn global structure. Also, the
+  alternative approach of gradient ascent is impractical due to
+  [adversarial perturbations](https://gradientscience.org/robust_reps/).
 
 We think that score matching and Langevin dynamics, by adding graded noise to
 the distribution of data, has the potential to perform well on generative
@@ -78,3 +85,4 @@ score-matching approach in the discrete domain, which we think is very exciting.
   https://www.ics.uci.edu/~welling/publications/papers/stoclangevin_v6.pdf
 [yu et al., 2016]: https://arxiv.org/abs/1609.05473
 [huang et al., 2018]: https://arxiv.org/abs/1809.04281
+[convchain]: https://github.com/mxgmn/ConvChain

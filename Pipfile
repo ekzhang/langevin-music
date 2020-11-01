@@ -1,0 +1,26 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+black = "*"
+
+[packages]
+music21 = "*"
+torch = "*"
+torchvision = "*"
+numpy = "*"
+scipy = "*"
+matplotlib = "*"
+seaborn = "*"
+tensorboard = "*"
+tqdm = "*"
+scikit-learn = "*"
+pillow = "*"
+
+[requires]
+python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true

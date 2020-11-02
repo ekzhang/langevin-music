@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 from torch import nn
 from torch.nn.utils import rnn
+import numpy as np
 
 from ..dataset.chorales import RANGES
 
@@ -83,4 +84,18 @@ class LSTMPredictor(pl.LightningModule):
 
         Returns a Tensor with dtype=torch.long of shape (seq_len, 4).
         """
-        pass
+        with torch.no_grad():
+            input = torch.randn(5, 4, 128)            
+            hidden1 = torch.randn(self.num_layers, 4, self.hidden_size)
+            hidden2 = torch.randn(self.num_layers, 4, self.hidden_size)
+            output_chorale = [np.array([3,3,3,3])]
+            for i in range(max_len):
+                output, hidden = self.lstm(input, (hidden1, hidden2))
+                topv, topi = output.topk(1)
+                topi = topi[0]
+                if np.all(topi.numpy() == 0):
+                    break
+                else:
+                    output_chorale.append(topi)
+            return torch.Tensor(output_chorale)
+        

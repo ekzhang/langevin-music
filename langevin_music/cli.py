@@ -55,6 +55,7 @@ def train(batch_size, seq_length, checkpoint, epochs):
     )
     trainer.split_idx = 0
     trainer.fit(model, datamodule=data)
+    #torch.save(model, "entire_model.pt")
 
 
 @main.command()
@@ -65,6 +66,7 @@ def train(batch_size, seq_length, checkpoint, epochs):
     metavar="FILE",
     help="A checkpoint file to sample from",
 )
-def sample():
+def sample(checkpoint):
     """Sample a chorale from a trained model, loaded from a checkpoint."""
-    print("Unimplemented! Exiting.")
+    model = LSTMPredictor.load_from_checkpoint(checkpoint)
+    print(model.sample())

@@ -100,7 +100,7 @@ def process_score(score: stream.Score) -> Chorale:
     return Chorale(parts=tuple(process_part(score.parts[i]) for i in range(4)))
 
 
-def process_part(part: stream.Part) -> List[str]:
+def process_part(part: stream.Part) -> List[Chorale.Token]:
     # 4 sixteenths/beat
     length = int((part.highestTime - 0.0) * 4)
     notes_and_rests = list(part.flat.getElementsByClass([note.Note, note.Rest]))
@@ -127,3 +127,4 @@ if __name__ == "__main__":
     # Testing code
     data = ChoraleDataset()
     print(data[0])
+    print("Number of chorales:", len(data))

@@ -18,6 +18,9 @@ tensorboard = "*"
 tqdm = "*"
 scikit-learn = "*"
 pillow = "*"
+ipython = "*"
+jupyter = "*"
+jupyterlab = "*"
 
 [requires]
 python_version = "3.8"

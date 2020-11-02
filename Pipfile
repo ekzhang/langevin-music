@@ -21,6 +21,8 @@ pillow = "*"
 ipython = "*"
 jupyter = "*"
 jupyterlab = "*"
+pytorch-lightning = "*"
+click = "*"
 
 [requires]
 python_version = "3.8"

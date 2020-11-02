@@ -2,8 +2,10 @@
 
 import os
 import pickle
+import torch
 from dataclasses import dataclass
 from music21 import *
+from torch._C import dtype
 from torch.utils.data import Dataset
 from typing import List, Literal, Tuple, Union
 
@@ -33,6 +35,22 @@ class Chorale:
 
     parts: Tuple[List[Token], List[Token], List[Token], List[Token]]
     metadata = None  # TODO
+
+    def encode(self) -> torch.Tensor:
+        """Encode object into a Tensor acceptable by PyTorch."""
+        retval = []
+        for i, part in enumerate(self.parts):
+            mapped = []
+            base_note = RANGES[i][0].midi
+            for token in part:
+                if token == "Hold":
+                    mapped.append(1)
+                elif token == "Rest":
+                    mapped.append(2)
+                else:
+                    mapped.append(3 + token - base_note)
+            retval.append(mapped)
+        return torch.Tensor(retval).long().T
 
 
 class ChoraleDataset(Dataset):

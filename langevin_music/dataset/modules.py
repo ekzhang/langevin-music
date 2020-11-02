@@ -1,0 +1,42 @@
+import torch
+import pytorch_lightning as pl
+from torch.utils.data import DataLoader, random_split
+from typing import List, Tuple
+
+from ..dataset.chorales import Chorale, ChoraleDataset
+
+
+class ChoraleSeqDataModule(pl.LightningDataModule):
+    def __init__(self, batch_size):
+        super().__init__()
+        self.batch_size = batch_size
+
+    def setup(self, stage=None):
+        chorales = ChoraleDataset()
+        total = len(chorales)
+        n_val = int(0.1 * total)
+        self.bach_train, self.bach_val = random_split(chorales, [total - n_val, n_val])
+
+    def train_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self.bach_train,
+            batch_size=self.batch_size,
+            num_workers=4,
+            collate_fn=self.collate_fn,
+        )
+
+    def val_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self.bach_val,
+            batch_size=self.batch_size,
+            num_workers=4,
+            collate_fn=self.collate_fn,
+        )
+
+    @staticmethod
+    def collate_fn(
+        batch: List[Chorale],
+    ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
+        # (batch_size, seq_length)
+        tensors = [item.encode() for item in batch]
+        return [t[:-1] for t in tensors], [t[1:] for t in tensors]

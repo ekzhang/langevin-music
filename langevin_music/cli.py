@@ -8,7 +8,13 @@ from .network.recurrent import LSTMPredictor
 from .dataset.modules import ChoraleSeqDataModule
 
 
-@click.command()
+@click.group()
+def main():
+    """Entry point for training neural networks and running inference."""
+    pass
+
+
+@main.command()
 @click.option(
     "-b", "--batch_size", default=8, show_default=True, help="Batch size for training"
 )
@@ -33,8 +39,8 @@ from .dataset.modules import ChoraleSeqDataModule
     show_default=True,
     help="Number of epochs to train for",
 )
-def main(batch_size, seq_length, checkpoint, epochs):
-    """Entry point for training neural networks and running inference."""
+def train(batch_size, seq_length, checkpoint, epochs):
+    """Train a deep generative model for chorale composition."""
     if checkpoint:
         model = LSTMPredictor.load_from_checkpoint(checkpoint)
     else:
@@ -49,3 +55,16 @@ def main(batch_size, seq_length, checkpoint, epochs):
     )
     trainer.split_idx = 0
     trainer.fit(model, datamodule=data)
+
+
+@main.command()
+@click.option(
+    "-c",
+    "--checkpoint",
+    type=str,
+    metavar="FILE",
+    help="A checkpoint file to sample from",
+)
+def sample():
+    """Sample a chorale from a trained model, loaded from a checkpoint."""
+    print("Unimplemented! Exiting.")

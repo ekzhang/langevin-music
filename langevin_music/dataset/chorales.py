@@ -1,11 +1,12 @@
 """Chorale data loaders."""
 
+from __future__ import annotations
+
 import os
 import pickle
 import torch
 from dataclasses import dataclass
 from music21 import *
-from torch._C import dtype
 from torch.utils.data import Dataset
 from typing import List, Literal, Tuple, Union
 
@@ -51,6 +52,46 @@ class Chorale:
                     mapped.append(3 + token - base_note)
             retval.append(mapped)
         return torch.Tensor(retval).long().T
+
+    @staticmethod
+    def decode(tensor: torch.Tensor) -> Chorale:
+        """Inverse function of encode(), converts a Tensor into an object."""
+        parts = []
+        for i, part in enumerate(tensor.T):
+            mapped = []
+            base_note = RANGES[i][0].midi
+            for entry in part:
+                if entry == 0:
+                    print("Warning: 0 in chorale tensor, treating as hold")
+                    mapped.append("Hold")
+                elif entry == 1:
+                    mapped.append("Hold")
+                elif entry == 2:
+                    mapped.append("Rest")
+                else:
+                    mapped.append(base_note + entry - 3)
+            parts.append(mapped)
+        return Chorale(parts=tuple(parts))
+
+    def to_score(self) -> stream.Score:
+        """Attempts to convert this Chorale object into a readable score.
+
+        This can be used to display a generated chorale, using music21's built
+        in MuseScore integration. For example:
+
+        >>> Chorale.decode(tensor).to_score().show()
+
+        Implementation is TODO. Some things to consider:
+
+        - How are we going to infer the time signature?
+        - What about the key signature?
+        - Can we display the score in a consistent format? (probably separate
+          staves for soprano-alto-tenor-bass parts)
+        - It'd be good to test this on some of the dataset chorales, to make
+          sure that the score after processing and converting is the same as
+          the original!
+        """
+        pass
 
 
 class ChoraleDataset(Dataset):

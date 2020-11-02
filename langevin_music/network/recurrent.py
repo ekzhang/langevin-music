@@ -74,3 +74,13 @@ class LSTMPredictor(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
         return optimizer
+
+    def sample(self, max_len=400) -> torch.Tensor:
+        """Sample a chorale from the LSTM predictor.
+
+        This method samples the chorale token-by-token, stopping early in the
+        event that a (0, 0, 0, 0) entry is generated.
+
+        Returns a Tensor with dtype=torch.long of shape (seq_len, 4).
+        """
+        pass

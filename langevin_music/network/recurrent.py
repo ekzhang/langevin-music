@@ -88,14 +88,14 @@ class LSTMPredictor(pl.LightningModule):
             input = torch.randn(5, 4, 128)            
             hidden1 = torch.randn(self.num_layers, 4, self.hidden_size)
             hidden2 = torch.randn(self.num_layers, 4, self.hidden_size)
-            output_chorale = [np.array([3,3,3,3])]
+            output_chorale = []
             for i in range(max_len):
-                output, hidden = self.lstm(input, (hidden1, hidden2))
+                output, (hidden1, hidden2) = self.lstm(input, (hidden1, hidden2))
                 topv, topi = output.topk(1)
                 topi = topi[0]
                 if np.all(topi.numpy() == 0):
                     break
                 else:
                     output_chorale.append(topi)
-            return torch.Tensor(output_chorale)
+            return torch.stack(output_chorale)
         

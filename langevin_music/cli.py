@@ -6,7 +6,7 @@ import pytorch_lightning.loggers as pl_loggers
 
 from .network.recurrent import LSTMPredictor
 from .dataset.modules import ChoraleSeqDataModule
-
+from .dataset.chorales import Chorale
 
 @click.group()
 def main():
@@ -69,4 +69,6 @@ def train(batch_size, seq_length, checkpoint, epochs):
 def sample(checkpoint):
     """Sample a chorale from a trained model, loaded from a checkpoint."""
     model = LSTMPredictor.load_from_checkpoint(checkpoint)
-    print(model.sample())
+    chorale = Chorale.decode(model.sample())
+    chorale.to_score()
+    

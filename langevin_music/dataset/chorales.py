@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import os
+import os, sys
 import pickle
 import torch
 from dataclasses import dataclass
@@ -57,9 +57,11 @@ class Chorale:
     def decode(tensor: torch.Tensor) -> Chorale:
         """Inverse function of encode(), converts a Tensor into an object."""
         parts = []
-        for i, part in enumerate(tensor.T):
+        print(tensor.T)
+        for i, part in enumerate(tensor.T.tolist()[0]):
             mapped = []
             base_note = RANGES[i][0].midi
+            print(part)
             for entry in part:
                 if entry == 0:
                     print("Warning: 0 in chorale tensor, treating as hold")
@@ -91,7 +93,29 @@ class Chorale:
           sure that the score after processing and converting is the same as
           the original!
         """
-        pass
+        s1 = stream.Score()
+        def to_part(p):
+            part = stream.Part() 
+            for t in range(len(p)):
+                if isinstance(p[t], int):
+                    d = 0.25
+                    s=t
+                    while s+1 < len(p):
+                        s += 1
+                        if p[s] == "Hold":
+                            d += 0.25
+                        else:
+                            break
+                    n = note.Note(p[t])
+                    n.duration = duration.Duration(d)
+                    part.append(n)
+                elif p[t] == "Rest":
+                    part.append(note.Rest())
+            return part
+        for i in range(len(self.parts)):
+            s1.insert(to_part(self.parts[i]))
+        s1.keySignature = s1.analyze('key')
+        s1.show()
 
 
 class ChoraleDataset(Dataset):
@@ -104,6 +128,7 @@ class ChoraleDataset(Dataset):
         if os.path.exists(self.CACHE_FILE):
             # Load cached data first, since music21 is slow
             print(f"Loading cached dataset from {self.CACHE_FILE}...")
+            sys.path.append('C:\coding\cs252\langevin-music')
             with open(self.CACHE_FILE, "rb") as f:
                 self.scores = pickle.load(f)
         else:
@@ -185,5 +210,6 @@ def process_part(part: stream.Part) -> List[Chorale.Token]:
 if __name__ == "__main__":
     # Testing code
     data = ChoraleDataset()
+    data[0].to_score()
     print(data[0])
     print("Number of chorales:", len(data))

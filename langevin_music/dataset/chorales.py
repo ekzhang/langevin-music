@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import os, sys
+import os
 import pickle
 import torch
 from dataclasses import dataclass
@@ -57,11 +57,9 @@ class Chorale:
     def decode(tensor: torch.Tensor) -> Chorale:
         """Inverse function of encode(), converts a Tensor into an object."""
         parts = []
-        print(tensor.T)
-        for i, part in enumerate(tensor.T.tolist()[0]):
+        for i, part in enumerate(tensor.T.tolist()):
             mapped = []
             base_note = RANGES[i][0].midi
-            print(part)
             for entry in part:
                 if entry == 0:
                     print("Warning: 0 in chorale tensor, treating as hold")
@@ -115,8 +113,7 @@ class Chorale:
         for i in range(len(self.parts)):
             s1.insert(to_part(self.parts[i]))
         s1.keySignature = s1.analyze('key')
-        s1.show()
-
+        return s1
 
 class ChoraleDataset(Dataset):
     """A dataset of 4-part Bach chorales, with preprocessing."""
@@ -210,6 +207,6 @@ def process_part(part: stream.Part) -> List[Chorale.Token]:
 if __name__ == "__main__":
     # Testing code
     data = ChoraleDataset()
-    data[0].to_score()
+    Chorale.decode(data[0].encode()).to_score().show()
     print(data[0])
     print("Number of chorales:", len(data))

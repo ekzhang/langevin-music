@@ -70,5 +70,5 @@ def sample(checkpoint):
     """Sample a chorale from a trained model, loaded from a checkpoint."""
     model = LSTMPredictor.load_from_checkpoint(checkpoint)
     chorale = Chorale.decode(model.sample())
-    chorale.to_score()
+    chorale.to_score().show()
     

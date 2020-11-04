@@ -97,5 +97,6 @@ class LSTMPredictor(pl.LightningModule):
                     break
                 else:
                     output_chorale.append(topi)
-            return torch.stack(output_chorale)
+            ts = torch.stack(output_chorale).squeeze()
+            return ts
         

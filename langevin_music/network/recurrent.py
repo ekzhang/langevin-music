@@ -85,7 +85,7 @@ class LSTMPredictor(pl.LightningModule):
         Returns a Tensor with dtype=torch.long of shape (seq_len, 4).
         """
         with torch.no_grad():
-            input = torch.randn(5, 4, 128)            
+            input = torch.randn(5, 4, 128)
             hidden1 = torch.randn(self.num_layers, 4, self.hidden_size)
             hidden2 = torch.randn(self.num_layers, 4, self.hidden_size)
             output_chorale = []
@@ -99,4 +99,3 @@ class LSTMPredictor(pl.LightningModule):
                     output_chorale.append(topi)
             ts = torch.stack(output_chorale).squeeze()
             return ts
-        

@@ -8,6 +8,7 @@ from .network.recurrent import LSTMPredictor
 from .dataset.modules import ChoraleSeqDataModule
 from .dataset.chorales import Chorale
 
+
 @click.group()
 def main():
     """Entry point for training neural networks and running inference."""
@@ -55,7 +56,6 @@ def train(batch_size, seq_length, checkpoint, epochs):
     )
     trainer.split_idx = 0
     trainer.fit(model, datamodule=data)
-    #torch.save(model, "entire_model.pt")
 
 
 @main.command()
@@ -71,4 +71,3 @@ def sample(checkpoint):
     model = LSTMPredictor.load_from_checkpoint(checkpoint)
     chorale = Chorale.decode(model.sample())
     chorale.to_score().show()
-    

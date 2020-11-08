@@ -92,13 +92,14 @@ class Chorale:
           the original!
         """
         s1 = stream.Score()
+
         def to_part(p):
-            part = stream.Part() 
+            part = stream.Part()
             for t in range(len(p)):
                 if isinstance(p[t], int):
                     d = 0.25
-                    s=t
-                    while s+1 < len(p):
+                    s = t
+                    while s + 1 < len(p):
                         s += 1
                         if p[s] == "Hold":
                             d += 0.25
@@ -110,10 +111,12 @@ class Chorale:
                 elif p[t] == "Rest":
                     part.append(note.Rest())
             return part
+
         for i in range(len(self.parts)):
             s1.insert(to_part(self.parts[i]))
-        s1.keySignature = s1.analyze('key')
+        s1.keySignature = s1.analyze("key")
         return s1
+
 
 class ChoraleDataset(Dataset):
     """A dataset of 4-part Bach chorales, with preprocessing."""
@@ -125,7 +128,6 @@ class ChoraleDataset(Dataset):
         if os.path.exists(self.CACHE_FILE):
             # Load cached data first, since music21 is slow
             print(f"Loading cached dataset from {self.CACHE_FILE}...")
-            sys.path.append('C:\coding\cs252\langevin-music')
             with open(self.CACHE_FILE, "rb") as f:
                 self.scores = pickle.load(f)
         else:

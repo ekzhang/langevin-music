@@ -103,12 +103,17 @@ class Chorale:
                         current_note = note.Note(token)
                     current_note.quarterLength = length
                     part.append(current_note)
+            part.makeAccidentals(
+                overrideStatus=True,
+                          cautionaryPitchClass=False,
+                          inPlace=True)
             return part
 
         score = stream.Score([to_part(tokens) for tokens in self.parts])
         keysig = score.analyze("key")
         for part in score:
             part.insert(0, keysig)
+            part.transpose(0, inPlace=True)
         return score
 
 

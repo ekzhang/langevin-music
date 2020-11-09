@@ -71,3 +71,19 @@ def sample(checkpoint):
     model = LSTMPredictor.load_from_checkpoint(checkpoint)
     chorale = Chorale.decode(model.sample())
     chorale.to_score().show()
+
+
+@main.command()
+@click.option(
+    "-n",
+    type=int,
+    default=42,
+)
+def test_to_score(n):
+    """Test the to_score() function."""
+    # Feel free to change this however or do anything here; subcommands are a good
+    # place to write temporary tests without dirtying the rest of the code.
+    from .dataset.chorales import ChoraleDataset
+
+    dataset = ChoraleDataset()
+    dataset[n].to_score().show()

@@ -81,41 +81,35 @@ class Chorale:
 
         >>> Chorale.decode(tensor).to_score().show()
 
-        Implementation is TODO. Some things to consider:
+        Implementation is basic but has some problems. Right now the key
+        signature is inferred, but there are some issues:
 
-        - How are we going to infer the time signature?
-        - What about the key signature?
-        - Can we display the score in a consistent format? (probably separate
-          staves for soprano-alto-tenor-bass parts)
-        - It'd be good to test this on some of the dataset chorales, to make
-          sure that the score after processing and converting is the same as
-          the original!
+        - How are we going to infer the time signature? What about anacrusis?
+        - Why does music21 keep adding random, unecessary natural accents?
         """
-        s1 = stream.Score()
-
-        def to_part(p):
+        def to_part(tokens: List[Chorale.Token]) -> stream.Part:
             part = stream.Part()
-            for t in range(len(p)):
-                if isinstance(p[t], int):
-                    d = 0.25
-                    s = t
-                    while s + 1 < len(p):
-                        s += 1
-                        if p[s] == "Hold":
-                            d += 0.25
+            for t, token in enumerate(tokens):
+                if token != "Hold":
+                    length = 0.25
+                    for s in range(t + 1, len(tokens)):
+                        if tokens[s] == "Hold":
+                            length += 0.25
                         else:
                             break
-                    n = note.Note(p[t])
-                    n.duration = duration.Duration(d)
-                    part.append(n)
-                elif p[t] == "Rest":
-                    part.append(note.Rest())
+                    if token == "Rest":
+                        current_note = note.Rest()
+                    else:
+                        current_note = note.Note(token)
+                    current_note.quarterLength = length
+                    part.append(current_note)
             return part
 
-        for i in range(len(self.parts)):
-            s1.insert(to_part(self.parts[i]))
-        s1.keySignature = s1.analyze("key")
-        return s1
+        score = stream.Score([to_part(tokens) for tokens in self.parts])
+        keysig = score.analyze("key")
+        for part in score:
+            part.insert(0, keysig)
+        return score
 
 
 class ChoraleDataset(Dataset):

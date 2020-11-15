@@ -85,7 +85,7 @@ class Chorale:
         signature is inferred, but there are some issues:
 
         - How are we going to infer the time signature? What about anacrusis?
-        - Why does music21 keep adding random, unecessary natural accents?
+        - Sometimes music21 infers the key signature incorrectly.
         """
 
         def to_part(tokens: List[Chorale.Token]) -> stream.Part:
@@ -105,9 +105,8 @@ class Chorale:
                     current_note.quarterLength = length
                     part.append(current_note)
             part.makeAccidentals(
-                overrideStatus=True,
-                          cautionaryPitchClass=False,
-                          inPlace=True)
+                overrideStatus=True, cautionaryPitchClass=False, inPlace=True
+            )
             return part
 
         score = stream.Score([to_part(tokens) for tokens in self.parts])

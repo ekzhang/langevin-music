@@ -85,17 +85,20 @@ class LSTMPredictor(pl.LightningModule):
         Returns a Tensor with dtype=torch.long of shape (seq_len, 4).
         """
         with torch.no_grad():
-            input = torch.randn(5, 4, 128)
-            hidden1 = torch.randn(self.num_layers, 4, self.hidden_size)
-            hidden2 = torch.randn(self.num_layers, 4, self.hidden_size)
+            input = torch.zeros((1, 1, 4), dtype=torch.long)
+            hiddens = self.init_hidden(batch_size=1)
             output_chorale = []
             for i in range(max_len):
-                output, (hidden1, hidden2) = self.lstm(input, (hidden1, hidden2))
-                topv, topi = output.topk(1)
-                topi = topi[0]
-                if np.all(topi.numpy() == 0):
+                output, hiddens = self.forward(input, hiddens)
+                # output shape: [(seq_len, batch_size, self.dims[i]) for i in range(4)]
+                choices = []
+                for o in output:
+                    probs = np.exp(o.flatten().numpy())
+                    choice = np.random.choice(np.arange(len(probs)), p=probs)
+                    choices.append(choice)
+                sample = torch.Tensor(choices).long()
+                if all(x == 0 for x in sample):
                     break
-                else:
-                    output_chorale.append(topi)
-            ts = torch.stack(output_chorale).squeeze()
-            return ts
+                output_chorale.append(sample)
+                input = sample.unsqueeze(0).unsqueeze(0)  # set next input
+            return torch.stack(output_chorale)

@@ -39,4 +39,9 @@ class ChoraleSeqDataModule(pl.LightningDataModule):
     ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         # (batch_size, seq_length)
         tensors = [item.encode() for item in batch]
-        return [t[:-1] for t in tensors], [t[1:] for t in tensors]
+        # We pad the initial input with a zero tensor, as an initial starting token
+        shifted_input = [
+            torch.cat((torch.zeros_like(t[0:1], dtype=torch.long), t[:-1]))
+            for t in tensors
+        ]
+        return shifted_input, tensors

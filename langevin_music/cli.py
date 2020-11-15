@@ -69,7 +69,10 @@ def train(batch_size, seq_length, checkpoint, epochs):
 def sample(checkpoint):
     """Sample a chorale from a trained model, loaded from a checkpoint."""
     model = LSTMPredictor.load_from_checkpoint(checkpoint)
-    chorale = Chorale.decode(model.sample())
+    sampled = model.sample()
+    print(sampled)
+    print(len(sampled))
+    chorale = Chorale.decode(sampled)
     chorale.to_score().show()
 
 

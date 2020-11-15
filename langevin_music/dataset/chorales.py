@@ -87,6 +87,7 @@ class Chorale:
         - How are we going to infer the time signature? What about anacrusis?
         - Why does music21 keep adding random, unecessary natural accents?
         """
+
         def to_part(tokens: List[Chorale.Token]) -> stream.Part:
             part = stream.Part()
             for t, token in enumerate(tokens):
@@ -110,7 +111,10 @@ class Chorale:
             return part
 
         score = stream.Score([to_part(tokens) for tokens in self.parts])
-        keysig = score.analyze("key")
+        try:
+            keysig = score.analyze("key")
+        except analysis.discrete.DiscreteAnalysisException:
+            keysig = key.KeySignature(0)
         for part in score:
             part.insert(0, keysig)
             part.transpose(0, inPlace=True)

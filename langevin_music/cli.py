@@ -4,9 +4,17 @@ import click
 import pytorch_lightning as pl
 import pytorch_lightning.loggers as pl_loggers
 
-from .network import get_arch
 from .dataset.modules import ChoraleNcsnModule, ChoraleSeqDataModule
 from .dataset.chorales import Chorale
+from .network.ncsn import NcsnV2Transformer
+from .network.recurrent import LSTMPredictor
+from .network.transformer import MusicTransformer
+
+ARCHITECTURES = {
+    "ncsnv2-transformer": (NcsnV2Transformer, ChoraleNcsnModule),
+    "lstm": (LSTMPredictor, ChoraleSeqDataModule),
+    "transformer": (MusicTransformer, ChoraleSeqDataModule),
+}
 
 
 @click.group()
@@ -22,7 +30,7 @@ def main():
 @click.option(
     "-s",
     "--bptt",
-    default=32,
+    default=0,
     show_default=True,
     help="Max length of sequence to use in truncated BPTT, if nonzero",
 )
@@ -49,31 +57,23 @@ def main():
 )
 def train(batch_size, bptt, checkpoint, epochs, arch):
     """Train a deep generative model for chorale composition."""
-    if checkpoint:
-        model = get_arch(arch).load_from_checkpoint(checkpoint)
-    else:
-        model = get_arch(arch)()
+    architecture, data_module = ARCHITECTURES[arch]
 
-    if bptt > 0:
-        # Sequence model with bptt
-        data = ChoraleSeqDataModule(batch_size)
-        trainer = pl.Trainer(
-            max_epochs=epochs,
-            truncated_bptt_steps=bptt,
-            logger=pl_loggers.TensorBoardLogger("logs/"),
-            log_every_n_steps=1,
-        )
-        trainer.split_idx = 0
-        trainer.fit(model, datamodule=data)
+    if checkpoint:
+        model = architecture.load_from_checkpoint(checkpoint)
     else:
-        # NCSN model
-        data = ChoraleNcsnModule(batch_size)
-        trainer = pl.Trainer(
-            max_epochs=epochs,
-            logger=pl_loggers.TensorBoardLogger("logs/"),
-            log_every_n_steps=1,
-        )
-        trainer.fit(model, datamodule=data)
+        model = architecture()
+
+    # Generic module
+    data = data_module(batch_size)
+    trainer = pl.Trainer(
+        max_epochs=epochs,
+        truncated_bptt_steps=(bptt if bptt > 0 else None),
+        logger=pl_loggers.TensorBoardLogger("logs/"),
+        log_every_n_steps=1,
+    )
+    trainer.split_idx = 0
+    trainer.fit(model, datamodule=data)
 
 
 @main.command()
@@ -93,7 +93,8 @@ def train(batch_size, bptt, checkpoint, epochs, arch):
 )
 def sample(checkpoint, arch):
     """Sample a chorale from a trained model, loaded from a checkpoint."""
-    model = get_arch(arch).load_from_checkpoint(checkpoint)
+    architecture, _ = ARCHITECTURES[arch]
+    model = architecture.load_from_checkpoint(checkpoint)
     sampled = model.sample()
     print(sampled)
     print(len(sampled))

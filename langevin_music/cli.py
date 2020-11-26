@@ -4,8 +4,8 @@ import click
 import pytorch_lightning as pl
 import pytorch_lightning.loggers as pl_loggers
 
-from .network.recurrent import LSTMPredictor
-from .dataset.modules import ChoraleSeqDataModule
+from .network import get_arch
+from .dataset.modules import ChoraleNcsnModule, ChoraleSeqDataModule
 from .dataset.chorales import Chorale
 
 
@@ -21,10 +21,10 @@ def main():
 )
 @click.option(
     "-s",
-    "--seq_length",
+    "--bptt",
     default=32,
     show_default=True,
-    help="Max length of sequence to use in truncated BPTT",
+    help="Max length of sequence to use in truncated BPTT, if nonzero",
 )
 @click.option(
     "-c",
@@ -40,22 +40,40 @@ def main():
     show_default=True,
     help="Number of epochs to train for",
 )
-def train(batch_size, seq_length, checkpoint, epochs):
+@click.option(
+    "-a",
+    "--arch",
+    type=str,
+    default="lstm",
+    help="Model architecture to load",
+)
+def train(batch_size, bptt, checkpoint, epochs, arch):
     """Train a deep generative model for chorale composition."""
     if checkpoint:
-        model = LSTMPredictor.load_from_checkpoint(checkpoint)
+        model = get_arch(arch).load_from_checkpoint(checkpoint)
     else:
-        model = LSTMPredictor()
-    data = ChoraleSeqDataModule(batch_size)
+        model = get_arch(arch)()
 
-    trainer = pl.Trainer(
-        max_epochs=epochs,
-        truncated_bptt_steps=seq_length,
-        logger=pl_loggers.TensorBoardLogger("logs/"),
-        log_every_n_steps=1,
-    )
-    trainer.split_idx = 0
-    trainer.fit(model, datamodule=data)
+    if bptt > 0:
+        # Sequence model with bptt
+        data = ChoraleSeqDataModule(batch_size)
+        trainer = pl.Trainer(
+            max_epochs=epochs,
+            truncated_bptt_steps=bptt,
+            logger=pl_loggers.TensorBoardLogger("logs/"),
+            log_every_n_steps=1,
+        )
+        trainer.split_idx = 0
+        trainer.fit(model, datamodule=data)
+    else:
+        # NCSN model
+        data = ChoraleNcsnModule(batch_size)
+        trainer = pl.Trainer(
+            max_epochs=epochs,
+            logger=pl_loggers.TensorBoardLogger("logs/"),
+            log_every_n_steps=1,
+        )
+        trainer.fit(model, datamodule=data)
 
 
 @main.command()
@@ -66,9 +84,16 @@ def train(batch_size, seq_length, checkpoint, epochs):
     metavar="FILE",
     help="A checkpoint file to sample from",
 )
-def sample(checkpoint):
+@click.option(
+    "-a",
+    "--arch",
+    type=str,
+    default="lstm",
+    help="Model architecture to load",
+)
+def sample(checkpoint, arch):
     """Sample a chorale from a trained model, loaded from a checkpoint."""
-    model = LSTMPredictor.load_from_checkpoint(checkpoint)
+    model = get_arch(arch).load_from_checkpoint(checkpoint)
     sampled = model.sample()
     print(sampled)
     print(len(sampled))

@@ -45,3 +45,41 @@ class ChoraleSeqDataModule(pl.LightningDataModule):
             for t in tensors
         ]
         return shifted_input, tensors
+
+
+class ChoraleNcsnModule(pl.LightningDataModule):
+    """Module for extracting training samples for score matching."""
+
+    def __init__(self, batch_size):
+        super().__init__()
+        self.batch_size = batch_size
+
+    def setup(self, stage=None):
+        chorales = ChoraleDataset()
+        total = len(chorales)
+        n_val = int(0.1 * total)
+        self.bach_train, self.bach_val = random_split(chorales, [total - n_val, n_val])
+
+    def train_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self.bach_train,
+            batch_size=self.batch_size,
+            num_workers=4,
+            collate_fn=self.collate_fn,
+        )
+
+    def val_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self.bach_val,
+            batch_size=self.batch_size,
+            num_workers=4,
+            collate_fn=self.collate_fn,
+        )
+
+    @staticmethod
+    def collate_fn(
+        batch: List[Chorale],
+    ) -> List[torch.Tensor]:
+        # (batch_size, seq_length, 4)
+        tensors = [item.encode() for item in batch]
+        return tensors

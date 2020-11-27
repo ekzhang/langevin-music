@@ -55,7 +55,12 @@ def main():
     default="lstm",
     help="Model architecture to load",
 )
-def train(batch_size, bptt, checkpoint, epochs, arch):
+@click.option(
+    "--gpus",
+    default=0,
+    help="Number of GPUs to use"
+)
+def train(batch_size, bptt, checkpoint, epochs, arch, gpus):
     """Train a deep generative model for chorale composition."""
     architecture, data_module = ARCHITECTURES[arch]
 
@@ -71,6 +76,7 @@ def train(batch_size, bptt, checkpoint, epochs, arch):
         truncated_bptt_steps=(bptt if bptt > 0 else None),
         logger=pl_loggers.TensorBoardLogger("logs/"),
         log_every_n_steps=1,
+        gpus=gpus,
     )
     trainer.split_idx = 0
     trainer.fit(model, datamodule=data)

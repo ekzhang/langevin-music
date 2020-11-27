@@ -8,7 +8,7 @@ import torch
 from dataclasses import dataclass
 from music21 import *
 from torch.utils.data import Dataset
-from typing import List, Literal, Tuple, Union
+from typing import List, Tuple, Union
 
 SOPRANO_RANGE = (pitch.Pitch("C4"), pitch.Pitch("G5"))
 ALTO_RANGE = (pitch.Pitch("F3"), pitch.Pitch("D5"))
@@ -32,7 +32,7 @@ class Chorale:
         metadata: A list of metadata, currently unused.
     """
 
-    Token = Union[int, Literal["Hold"], Literal["Rest"]]
+    Token = Union[int, str]
 
     parts: Tuple[List[Token], List[Token], List[Token], List[Token]]
     metadata = None  # TODO

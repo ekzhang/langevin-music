@@ -55,11 +55,7 @@ def main():
     default="lstm",
     help="Model architecture to load",
 )
-@click.option(
-    "--gpus",
-    default=0,
-    help="Number of GPUs to use"
-)
+@click.option("--gpus", default=0, help="Number of GPUs to use")
 def train(batch_size, bptt, checkpoint, epochs, arch, gpus):
     """Train a deep generative model for chorale composition."""
     architecture, data_module = ARCHITECTURES[arch]
@@ -106,19 +102,3 @@ def sample(checkpoint, arch):
     print(len(sampled))
     chorale = Chorale.decode(sampled)
     chorale.to_score().show()
-
-
-@main.command()
-@click.option(
-    "-n",
-    type=int,
-    default=42,
-)
-def test_to_score(n):
-    """Test the to_score() function."""
-    # Feel free to change this however or do anything here; subcommands are a good
-    # place to write temporary tests without dirtying the rest of the code.
-    from .dataset.chorales import ChoraleDataset
-
-    dataset = ChoraleDataset()
-    dataset[n].to_score().show()

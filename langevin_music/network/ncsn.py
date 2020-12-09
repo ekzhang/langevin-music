@@ -56,7 +56,7 @@ class NcsnV2Transformer(pl.LightningModule):
         # New shape: (seq_len, batch_size, sum(self.dims))
         assert len(x.shape) == 3 and x.shape[-1] == sum(self.dims)
 
-        # TODO(ekzhang): Right now, we have a single sigma for the entire batch, but
+        # Note: Right now, we train with a single sigma for the entire batch, but
         # it probably makes more sense to select different sigmas for each sample in
         # the batch instead.
         sigma = np.random.choice(self.noise_scales)

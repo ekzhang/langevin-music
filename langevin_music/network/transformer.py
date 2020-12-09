@@ -20,9 +20,9 @@ class MusicTransformer(pl.LightningModule):
         self.valid_acc = pl.metrics.Accuracy()
 
         # Step 1: Embed the musical scores into a latent space of dimension `self.ninp`
-        self.embed = nn.ModuleList([
-            nn.Embedding(num_embeddings=dim, embedding_dim=128) for dim in self.dims
-        ])
+        self.embed = nn.ModuleList(
+            [nn.Embedding(num_embeddings=dim, embedding_dim=128) for dim in self.dims]
+        )
         self.ninp = 512
 
         # Step 2: Transformer model on the latent space
@@ -69,13 +69,13 @@ class MusicTransformer(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss = self.shared_step(batch, self.train_acc)
         self.log("train_loss", loss)
-        self.log('train_acc', self.train_acc, on_step=False, on_epoch=True)
+        self.log("train_acc", self.train_acc, on_step=False, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         loss = self.shared_step(batch, self.valid_acc)
         self.log("val_loss", loss)
-        self.log('val_acc', self.valid_acc, on_step=False, on_epoch=True)
+        self.log("val_acc", self.valid_acc, on_step=False, on_epoch=True)
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
@@ -90,11 +90,12 @@ class MusicTransformer(pl.LightningModule):
             choices = []
             for o in output:
                 probs = np.exp(o[-1, 0].numpy())
-#                 choice = np.random.choice(np.arange(len(probs)), p=probs)
-                choice = np.argmax(probs)
+                choice = np.random.choice(np.arange(len(probs)), p=probs)
                 choices.append(choice)
             sample = torch.Tensor(choices).long()
             if all(x == 0 for x in sample):
                 break
-            input = torch.cat([input, sample.unsqueeze(0).unsqueeze(0)])  # set next input
+            input = torch.cat(
+                [input, sample.unsqueeze(0).unsqueeze(0)]
+            )  # set next input
         return input[1:].squeeze(1)

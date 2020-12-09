@@ -46,10 +46,6 @@ class LSTMPredictor(pl.LightningModule):
         )
 
     def shared_step(self, batch, hiddens):
-        # print("batch[0] len:", len(batch[0]))
-        # print("batch[0] element shape:", batch[0][0].shape)
-        # print("batch[1] len:", len(batch[1]))
-        # print("batch[1] element shape:", batch[1][0].shape)
         x = rnn.pad_sequence(batch[0])
         y = rnn.pad_sequence(batch[1], batch_first=True)
         y_hat, hiddens = self.forward(x, hiddens)
